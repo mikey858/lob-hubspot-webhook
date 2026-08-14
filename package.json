@@ -1,0 +1,13 @@
+{
+  "name": "lob-hubspot-webhook-receiver",
+  "version": "1.0.0",
+  "description": "Receives Lob letter.* webhooks and updates HubSpot contacts (status + QR scans)",
+  "main": "lob-webhook-receiver.js",
+  "scripts": {
+    "start": "node lob-webhook-receiver.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "express": "^4.19.0"
+  }
+}
