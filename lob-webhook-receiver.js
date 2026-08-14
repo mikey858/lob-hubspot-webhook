@@ -1,6 +1,6 @@
 /**
  * Lob -> HubSpot webhook receiver (unified: mail status + QR scans)
- * ---------------------------------------------------------------------
+ * ------------------------------------------------------------------
  * One endpoint that Lob calls on every letter.* event. It maps Lob's
  * event to the HubSpot contact and updates:
  *   - lob_last_status        (enumeration)  <- status events
@@ -39,7 +39,8 @@ const STATUS_MAP = {
   'letter.in_transit': 'in_transit',
   'letter.in_local_area': 'in_local_area',
   'letter.processed_for_delivery': 'processed_for_delivery',
-  'letter.re_routed': 're-routed',
+  'letter.re-routed': 're-routed',
+  'letter.re_routed': 're-routed', // accept both spellings, just in case
   'letter.returned_to_sender': 'returned_to_sender',
   'letter.delivered': 'delivered',
   'letter.failed': 'failed',
@@ -51,7 +52,7 @@ const TERMINAL = new Set(['delivered', 'returned_to_sender', 'failed']);
 
 const hsHeaders = () => ({ Authorization: `Bearer ${HUBSPOT_TOKEN}`, 'Content-Type': 'application/json' });
 
-// ---- HubSpot helpers ------------------------------------------------------
+// ---- HubSpot helpers -------------------------------------------------------
 
 // Resolve the HubSpot contact id: prefer the stamped metadata, else search by letter id.
 async function resolveContactId(letter) {
@@ -61,7 +62,7 @@ async function resolveContactId(letter) {
   const letterId = letter && letter.id;
   if (!letterId) return null;
   const res = await axios.post(
-    'https://api.hubspot.com/crm/v3/objects/contacts/search',
+    'https://api.hubapi.com/crm/v3/objects/contacts/search',
     {
       filterGroups: [{ filters: [{ propertyName: 'lob_letter_id', operator: 'EQ', value: letterId }] }],
       properties: ['lob_qr_scans'],
@@ -93,7 +94,7 @@ async function incrementQrScans(contactId) {
   return next;
 }
 
-// ---- Lob signature verification ------------------------------------------
+// ---- Lob signature verification -------------------------------------------
 // Lob signs with HMAC-SHA256 over `${timestamp}.${rawBody}`. Headers:
 //   lob-signature, lob-signature-timestamp
 function verifyLobSignature(req) {
@@ -112,7 +113,7 @@ function verifyLobSignature(req) {
   }
 }
 
-// ---- HTTP app ------------------------------------------------------------
+// ---- HTTP app --------------------------------------------------------------
 
 const app = express();
 // Capture the raw body (needed for signature verification) while still parsing JSON.
